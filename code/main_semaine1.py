@@ -1,9 +1,12 @@
+"""install svg: python3 -m pip install --user svg.py"""
+
 
 # Importation des bibliothèques nécessaires
 import pygame  # Bibliothèque principale pour la création de la fenêtre, la gestion des événements et des dessins.
 import math    # Fournit des fonctions mathématiques comme hypot pour calculer des distances.
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
-
+import svg
+help(svg)
 # Initialisation de Pygame
 pygame.init()  # Démarre l'ensemble des modules de pygame pour permettre l'affichage graphique et les interactions.
 
