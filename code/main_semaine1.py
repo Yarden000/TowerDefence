@@ -6,13 +6,13 @@ import pygame  # Bibliothèque principale pour la création de la fenêtre, la g
 import math    # Fournit des fonctions mathématiques comme hypot pour calculer des distances.
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
 import svg
-help(svg)
+
 # Initialisation de Pygame
 pygame.init()  # Démarre l'ensemble des modules de pygame pour permettre l'affichage graphique et les interactions.
 
 # Définition des dimensions de la fenêtre du jeu
 WIDTH, HEIGHT = 800, 600  # Modélise l'espace de jeu où se déplaceront ennemis et tours.
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))  # Crée une fenêtre pygame de dimensions spécifiées.
+SURFACE = pygame.display.set_mode((WIDTH, HEIGHT))  # Crée une fenêtre pygame de dimensions spécifiées.
 pygame.display.set_caption("Tower Defense - Semaine 1 - Enemies")  # Donne un titre à la fenêtre.
 
 # Définition des couleurs utilisées dans le jeu (format RGB)
@@ -54,7 +54,7 @@ def main():
 
     while run:
         clock.tick(FPS)
-        WIN.fill(WHITE)
+        SURFACE.fill(WHITE)
 
         # TODO: Dessiner le chemin
 
