@@ -1,19 +1,14 @@
 import matplotlib.pyplot as plt
-import svgelements
-from svgelements import Path, Line, Arc, CubicBezier, QuadraticBezier, Close, Move
-
+from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
 
 
 # Define the path using svgelements
-path = Path(
-    Move((100, 100)),  # Move to (100, 100)
-)
-
+path:Path = Path()
 # Append a quadratic Bézier curve
-path.append(QuadraticBezier((200, 300), (0, 200), (200, 400)))
-path.append(CubicBezier((200, 400), (0, 200), (500, 500), (300, 600)))
+path += Path(QuadraticBezier((200 + 100j), (1 + 200j), (200 + 400j)))
+path += Path(CubicBezier((200 + 400j), (1 + 600j), (800 + 500j), (300 + 600j)))
 
-points = [(200, 300), (0, 200), (200, 400), (200, 400), (0, 200), (500, 500), (300, 600)]
+points = [(200, 100), (0, 200), (200, 400), (200, 400), (0, 600), (800, 500), (300, 600)]
 
 # Prepare the plot
 fig, ax = plt.subplots()
@@ -35,9 +30,10 @@ for segment in path:
         y_values = [segment.point(t).imag for t in t_values]
         ax.plot(x_values, y_values, color='g')
 '''
-t_values = [i / 100 for i in range(101)]
-x_values = [path.point(t, 1000000).real for t in t_values]
-y_values = [path.point(t, 1000000).imag for t in t_values]
+n = 50
+path_len = path.length()
+x_values = [path.point(path_len * i / n).real for i in range(n)]
+y_values = [path.point(path_len * i / n).imag for i in range(n)]
 ax.plot(x_values, y_values, 'g.')
 
 

@@ -3,8 +3,7 @@ import math    # Fournit des fonctions mathématiques comme hypot pour calculer 
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
 import svgelements
 from svgelements import Path, Line, Arc, CubicBezier, QuadraticBezier, Close, Move
-# Path = 1, Line = 2, Arc = 3, CubicBezier = 4, QuadraticBezier = 5, Close = 6, Move = 7
-# 
+
 
 
 
@@ -26,21 +25,37 @@ class MapMaker:
         run = True  # Contrôle principal de la boucle de jeu
         
         finished = False
-        drawing = False
-        type = None
+        drawing = True
+        # path info
+        type: None|str = None
+        start_pos: None|tuple = None
+        end_pos = None
         while not finished:
 
             clock.tick(FPS)
             SURFACE.fill('white')
 
             mouse_pos = pygame.mouse.get_pos()
+            mouse_pressed = pygame.mouse.get_pressed()
             keys = pygame.key.get_pressed()
+
+            
+
             
 
             if drawing:
 
-                # select type
+                # type of path selected
                 if type == None:
+                    pass
+                elif type == 'Line':
+                    pass
+                elif type == 'Arc':
+                    pass
+                elif type == 'QuadraticBezier':
+                    pass
+                elif type == 'CubicBezier':
+                    pass
                 
 
             
