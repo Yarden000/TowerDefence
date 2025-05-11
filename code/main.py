@@ -1,8 +1,8 @@
 import pygame  # Bibliothèque principale pour la création de la fenêtre, la gestion des événements et des dessins.
 import math    # Fournit des fonctions mathématiques comme hypot pour calculer des distances.
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
-import svg
-
+from settings import SCREEN_SIZE
+from mapmaker import MapMaker
 
 class Game:
     
@@ -12,8 +12,7 @@ class Game:
     def run(self):
         pygame.init()
 
-        WIDTH, HEIGHT = 800, 600  # Modélise l'espace de jeu où se déplaceront ennemis et tours.
-        SURFACE = pygame.display.set_mode((WIDTH, HEIGHT))  # Crée une fenêtre pygame de dimensions spécifiées.
+        SURFACE = pygame.display.set_mode(SCREEN_SIZE)  # Crée une fenêtre pygame de dimensions spécifiées.
         pygame.display.set_caption("Tower Defense - Semaine 1 - Enemies")  # Donne un titre à la fenêtre.
 
         FPS = 60  # Permet de contrôler la fluidité de l'animation (60 images par seconde).
@@ -45,5 +44,8 @@ class Game:
 
 
 if __name__ == "__main__":
+    map_maker = MapMaker()
+    exit, map = map_maker.run()
     game = Game()
-    game.run()
+    if not exit:
+        game.run()

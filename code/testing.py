@@ -5,8 +5,8 @@ from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
 # Define the path using svgelements
 path:Path = Path()
 # Append a quadratic Bézier curve
-path += Path(QuadraticBezier((200 + 100j), (1 + 200j), (200 + 400j)))
-path += Path(CubicBezier((200 + 400j), (1 + 600j), (800 + 500j), (300 + 600j)))
+path += Path(QuadraticBezier(200 + 100j, 1 + 200j, 200 + 400j))
+path += Path(CubicBezier(200 + 400j, 1 + 600j, 800 + 500j, 300 + 600j))
 
 points = [(200, 100), (0, 200), (200, 400), (200, 400), (0, 600), (800, 500), (300, 600)]
 
@@ -32,8 +32,8 @@ for segment in path:
 '''
 n = 50
 path_len = path.length()
-x_values = [path.point(path_len * i / n).real for i in range(n)]
-y_values = [path.point(path_len * i / n).imag for i in range(n)]
+x_values = [path.point(path.ilength(path_len * i / n)).real for i in range(n)]
+y_values = [path.point(path.ilength(path_len * i / n)).imag for i in range(n)]
 ax.plot(x_values, y_values, 'g.')
 
 
