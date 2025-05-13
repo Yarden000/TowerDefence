@@ -5,6 +5,7 @@ class Tower:
     # La classe Tower représente une tour dans le jeu
     # TODO: Ajouter les attributs nécessaires pour la tour
     def __init__(self, pos):
+        print('huh')
         self.pos = pos # Position de la tour
 
     # TODO: Ajouter la méthode pour tirer un projectile 
@@ -14,5 +15,5 @@ class Tower:
         pass # TODO: Implémenter la logique de tir
         
     # TODO: Modifier la méthode pour dessiner la tour 
-    def draw(self, win):
-        pygame.draw.circle(win, GREEN, (int(self.pos[0]), int(self.pos[1])), 15)
+    def draw(self, screen):
+        pygame.draw.circle(screen, 'Black', (int(self.pos[0]), int(self.pos[1])), 15)

@@ -6,7 +6,6 @@ helpull resources:
 import pygame  # Bibliothèque principale pour la création de la fenêtre, la gestion des événements et des dessins.
 import math    # Fournit des fonctions mathématiques comme hypot pour calculer des distances.
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
-import svgelements
 from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
 from settings import SCREEN_SIZE, display_path, path_points, tup_to_comp
 
@@ -16,7 +15,7 @@ class MapMaker:
 
     def __init__(self):
         # temporary
-        self.precision = 1
+        self.precision = 5
         self.path = Path()
         vertecies = [(0, 150), (500, 150), (500, 300), (800, 300), (800, 450)]
         for i in range(len(vertecies) - 1):

@@ -3,12 +3,14 @@ import math    # Fournit des fonctions mathématiques comme hypot pour calculer 
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
 from settings import SCREEN_SIZE, display_path
 from mapmaker import MapMaker
-from enemies import Enemy
+from enemies import Enemy,Enemy_spawner
+from tower import Tower
 
 class Game:
     
     def __init__(self, map_maker: MapMaker):
         self.displayer = Displayer(self)
+        self.enemy_spawner = Enemy_spawner(self)
         self.map_maker = map_maker
         self.path = self.map_maker.path
         self.path_points = self.map_maker.points
@@ -16,6 +18,9 @@ class Game:
 
         self.enemies = [Enemy(self.path)]
         self.towers = []
+
+    def spawn_enemy(self):
+        self.enemies.append(Enemy(self.path))
 
     def move_enemies(self, dt):
         for enemy in self.enemies:
@@ -29,10 +34,21 @@ class Game:
         clock = pygame.time.Clock()  # Objet permettant de contrôler le framerate
         run = True  # Contrôle principal de la boucle de jeu
         
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pressed = pygame.mouse.get_pressed()
+        keys = pygame.key.get_pressed()
+        
         
         while run:
             clock.tick(FPS)
             dt = clock.get_time() / 1000
+
+            # place towers
+            #if mouse_pressed[0]:
+            if keys[pygame.K_1]:
+                self.towers.append(Tower(mouse_pos))
+            # spawn enemies
+            self.enemy_spawner.spawn(dt)
             
             # move enemies
             self.move_enemies(dt)
@@ -56,6 +72,10 @@ class Displayer:
         for enemie in enemies:
             enemie.draw(self.screen)
 
+    def display_towers(self, towers):
+        for tower in towers:
+            tower.draw(self.screen)
+
 
     def display(self, dt):
         self.screen.fill('white')
@@ -63,8 +83,9 @@ class Displayer:
         pygame.display.set_caption("Tower Defense | dt = " + str(dt))  # Donne un titre à la fenêtre.
         
         
-        display_path(self.game.path_points, self.screen)
+        display_path(self.game.path_points, self.screen, thikness=1)
         self.display_enemies(self.game.enemies)
+        self.display_towers(self.game.towers)
 
         # Met à jour l'écran après tous les dessins
         pygame.display.update()

@@ -2,6 +2,23 @@ import math
 from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
 import pygame
 from settings import comp_to_tup
+import random
+
+class Enemy_spawner:
+
+    def __init__(self, game):
+        self.game = game
+        self.averagw_spawn_rate = 1  # average number of enemies spawned each second
+
+
+    def spawn(self, dt):
+        spawn_prob = self.averagw_spawn_rate * dt
+        while spawn_prob >= 1:
+            spawn_prob -= 1
+            self.game.spawn_enemy()
+        x = random.random()
+        if spawn_prob > x:
+            self.game.spawn_enemy()
 
 
 class Enemy:
@@ -15,39 +32,11 @@ class Enemy:
         self.color = 'red'
 
     def move(self, dt, path_points:list[tuple], path_precision:int):
-        '''
-        # Permet à l'ennemi de se déplacer vers le prochain point du chemin
-        if self.path_index < len(self.path) - 1: # Si l'ennemi n'est pas au dernier point
-            # Calculer la position cible
-            target = self.path[self.path_index + 1] # Prochain point du chemin
-        else:
-            # Si l'ennemi est au dernier point, il ne se déplace pas
-            return True # Signale que l'ennemi est arrivé (il faudra faire une action)
-        
-        # Calculer le vecteur de direction vers la cible
-        dir_vector = ( target[0] - self.pos[0], target[1] - self.pos[1] )
-        # Calculer la distance entre la position actuelle et la cible
-        distance = math.hypot(*dir_vector) #*dir_vector est équivalent à dir_vector[0], dir_vector[1], etc...
-        
-        
-        # Si l'ennemi est proche du prochain point du chemin, il se déplace sur ce point
-        if distance < self.speed:
-            self.pos = list(target) # Met à jour la position exacte
-            self.path_index += 1 # Passe au prochain point
-        # Sinon, il se déplace dans la direction de la cible
-        else:
-            # Calculer le vecteur de direction normalisé
-            dir_norm = (dir_vector[0]/distance, dir_vector[1]/distance)
-            #Le vecteur de direction normalisé est multiplié par la vitesse pour obtenir le déplacement
-            #Ajouter le déplacement à la position actuelle pour obtenir la nouvelle position
-            self.pos[0] += dir_norm[0] * self.speed 
-            self.pos[1] += dir_norm[1] * self.speed
-        return False # Ennemi en mouvement
-        '''
         self.dist += self.speed * dt
         if self.dist <= self.path_len:
             rounded_dist = int(self.dist / path_precision)
-            self.pos = comp_to_tup(self.path.point(self.path.ilength(rounded_dist)))
+            self.pos = path_points[rounded_dist]
+            # self.pos = comp_to_tup(self.path.point(self.path.ilength(rounded_dist)))
         else:
             return True
 
