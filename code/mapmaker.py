@@ -8,7 +8,7 @@ import math    # Fournit des fonctions mathématiques comme hypot pour calculer 
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
 import svgelements
 from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
-from settings import SCREEN_SIZE, display_path, tup_to_comp
+from settings import SCREEN_SIZE, display_path, path_points, tup_to_comp
 
 
 
@@ -16,18 +16,23 @@ class MapMaker:
 
     def __init__(self):
         # temporary
+        self.precision = 1
         self.path = Path()
-        points = [(0, 150), (500, 150), (500, 300), (800, 300), (800, 450), (0, 450)]
-        for i in range(len(points) - 1):
-            self.path += Path(Line(tup_to_comp(points[i]), tup_to_comp(points[i+1])))
+        vertecies = [(0, 150), (500, 150), (500, 300), (800, 300), (800, 450)]
+        for i in range(len(vertecies) - 1):
+            self.path += Path(Line(tup_to_comp(vertecies[i]), tup_to_comp(vertecies[i+1])))
+        self.path += Path(CubicBezier(800 + 450j, 500 - 200j, 800 + 800j, 450j))
         '''
         self.path = Path()
         self.path += Path(QuadraticBezier(200 + 100j, 200j, 200 + 400j))
         self.path += Path(CubicBezier(200 + 400j, 600j, 800 + 500j, 300 + 600j))
         '''
+        self.points = path_points(self.path, self.precision)
+        self.exit = False  # if true means you want to close the program => no need to run the game in the main file
 
-    def run(self) -> tuple[bool, Path]:
-        exit = False  # if true means you want to close the program => no need to run the game in the main file
+    def run(self):
+        
+        temporairy_precision = 50
 
         pygame.init()
 
@@ -94,17 +99,18 @@ class MapMaker:
 
             
             # displays
-            display_path(self.path, SCREEN, color = 'black')
+            display_path(path_points(self.path, temporairy_precision), SCREEN, color = 'black', thikness = temporairy_precision)
             # Met à jour l'écran après tous les dessins
             pygame.display.update()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
-                    exit = True
+                    self.exit = True
             
             if keys[pygame.K_q]:
                 finished = True
 
         pygame.quit()
-        return exit, self.path
+
+        self.points = path_points(self.path, self.precision)
