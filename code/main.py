@@ -17,12 +17,12 @@ class Game:
         self.path_points = self.map_maker.points
         self.path_precision = self.map_maker.precision
 
-        self.enemies: list[Enemy] = [Enemy(self.path)]
+        self.enemies: list[Enemy] = []
         self.towers:list[Tower] = []
         self.projectiles:list[Projectile] = []
 
     def spawn_enemy(self):
-        self.enemies.append(Enemy(self.path))
+        self.enemies.append(Enemy(self))
 
     def move_enemies(self, dt):
         for enemy in self.enemies:

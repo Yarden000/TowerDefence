@@ -22,8 +22,10 @@ class Enemy_spawner:
 
 
 class Enemy:
-    def __init__(self, path:Path):
-        self.path = path  # Stocke le chemin que l'ennemi doit suivre.
+    radius = 10
+    def __init__(self, game):
+        self.game = game
+        self.path:Path = self.game.path  # Stocke le chemin que l'ennemi doit suivre.
         self.path_len = self.path.length()
         # self.path_index = 0  # Indice du point actuel dans le chemin.
         self.dist = 0  # distance on the path
@@ -38,9 +40,14 @@ class Enemy:
             self.pos = path_points[rounded_dist]
             # self.pos = comp_to_tup(self.path.point(self.path.ilength(rounded_dist)))
         else:
-            return True
+            self.arrived()
 
+    def arrived(self):
+        self.kill()
+
+    def kill(self):
+        self.game.enemies.remove(self)
 
     def draw(self, screen):
         # Dessine l'ennemi sur l'écran
-        pygame.draw.circle(screen, self.color, self.pos, 10)
+        pygame.draw.circle(screen, self.color, self.pos, self.radius)

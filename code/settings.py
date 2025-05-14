@@ -6,6 +6,12 @@ comp_to_tup = lambda c: (c.real, c.imag)
 tup_to_comp = lambda t: t[0] + t[1] * 1j
 Vec2 = pygame.Vector2
 
+
+def closest_to_point(origin, targets):
+    '''elements of targets need to have a .pos'''
+    pass
+    
+
 def cc_collision(p1, r1, p2, r2) -> bool:
     '''true if two circles are colliding'''
     if (Vec2(p1) - Vec2(p2)).magnitude_squared() < (r1 + r2)**2:
