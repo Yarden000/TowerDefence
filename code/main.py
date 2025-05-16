@@ -36,10 +36,9 @@ class Game:
         for tower in self.towers:
             tower.shoot(dt)
 
-    def add_tower(self, pos):
-        new_tower = Tower(self, pos)
+    def add_tower(self, new_tower:Tower):
         for tower in self.towers:
-            if cc_collision(pos, new_tower.radius, tower.pos, tower.radius):
+            if cc_collision(new_tower.pos, new_tower.radius, tower.pos, tower.radius):
                 return False
         self.towers.append(new_tower)
 
@@ -66,9 +65,19 @@ class Game:
             mouse_pressed = pygame.mouse.get_pressed()
             keys = pygame.key.get_pressed()
 
+            # actions
+            if action != None and keys[pygame.K_0]:
+                action = None
+                print('action = ' + str(action))
+
+            elif action == None and keys[pygame.K_1]:
+                action = 'placing_tower'
+                print('action = ' + str(action))
+
             # place towers
-            if mouse_pressed[0]:
-                self.add_tower(mouse_pos)
+            elif action == 'placing_tower':
+                if mouse_pressed[0]:
+                    self.add_tower(Tower(self, mouse_pos))
             # spawn enemies
             self.enemy_spawner.spawn(dt)
             
@@ -120,6 +129,7 @@ class Displayer:
         pygame.display.update()
 
 if __name__ == "__main__":
+    print('starting ...')
     map_maker = MapMaker()
     # map_maker.run()
     game = Game(map_maker)

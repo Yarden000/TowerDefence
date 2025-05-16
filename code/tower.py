@@ -15,6 +15,9 @@ class Tower:
         self.pos = Vec2(pos) # Position de la tour
 
     # TODO: Ajouter la méthode pour tirer un projectile 
+
+    def move_to(self, pos:Vec2):
+        self.pos = pos
         
     def enemies_in_range(self):
         enemies = self.game.enemies
@@ -40,6 +43,6 @@ class Tower:
         pass # TODO: Implémenter la logique de tir
         
     # TODO: Modifier la méthode pour dessiner la tour 
-    def draw(self, screen):
-        pygame.draw.circle(screen, 'Black', self.pos, self.radius)
-        pygame.draw.circle(screen, 'Black', self.pos, self.range, width = 1)
+    def draw(self, screen, color = 'Black'):
+        pygame.draw.circle(screen, color, self.pos, self.radius)
+        pygame.draw.circle(screen, color, self.pos, self.range, width = 1)
