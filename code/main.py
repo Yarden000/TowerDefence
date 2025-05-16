@@ -14,12 +14,16 @@ class Game:
         self.enemy_spawner = Enemy_spawner(self)
         self.map_maker = map_maker
         self.path = self.map_maker.path
+        self.path_len = self.path.length()
         self.path_points = self.map_maker.points
         self.path_precision = self.map_maker.precision
 
         self.enemies: list[Enemy] = []
         self.towers:list[Tower] = []
         self.projectiles:list[Projectile] = []
+
+        self.player_health = 100
+        self.player_money = 100000
 
     def spawn_enemy(self):
         self.enemies.append(Enemy(self))
@@ -38,9 +42,10 @@ class Game:
 
     def add_tower(self, new_tower:Tower):
         for tower in self.towers:
-            if cc_collision(new_tower.pos, new_tower.radius, tower.pos, tower.radius):
+            if cc_collision(new_tower.pos, new_tower.radius, tower.pos, tower.radius) or new_tower.cost > self.player_money:
                 return False
         self.towers.append(new_tower)
+        self.player_money -= new_tower.cost
 
     def add_projectile(self, projectile):
         self.projectiles.append(projectile)
@@ -49,7 +54,7 @@ class Game:
     def run(self):
         pygame.init()
         dt = 0
-        FPS = 60  # Permet de contrôler la fluidité de l'animation (60 images par seconde).
+        FPS = 120  # Permet de contrôler la fluidité de l'animation (60 images par seconde).
 
         clock = pygame.time.Clock()  # Objet permettant de contrôler le framerate
         run = True  # Contrôle principal de la boucle de jeu
@@ -57,6 +62,8 @@ class Game:
         # the acion curently doing
         action = None
         
+
+        self.pre_tower = None
         while run:
             clock.tick(FPS)
             dt = clock.get_time() / 1000
@@ -69,21 +76,54 @@ class Game:
             if action != None and keys[pygame.K_0]:
                 action = None
                 print('action = ' + str(action))
+                self.pre_tower = None
 
             elif action == None and keys[pygame.K_1]:
                 action = 'placing_tower'
                 print('action = ' + str(action))
+                self.pre_tower = Tower(self, mouse_pos)
 
             # place towers
             elif action == 'placing_tower':
                 if mouse_pressed[0]:
-                    self.add_tower(Tower(self, mouse_pos))
+                    print('placing')
+                    print('--------')
+                    self.add_tower(self.pre_tower)
+                    self.pre_tower = Tower(self, mouse_pos)
+                
+                self.pre_tower.move_to(mouse_pos)
             # spawn enemies
             self.enemy_spawner.spawn(dt)
             
             # move enemies
             self.move_projectiles(dt)
+
+            # projectiles hit enemies
+            # TODO: needs optimisation: grid
+            for projectile in self.projectiles:
+                for enemy in self.enemies:
+                    if enemy not in projectile.enemies_hit:
+                        if cc_collision(projectile.pos, projectile.radius, enemy.pos, enemy.radius):
+                            enemy.take_damage(5)
+                            projectile.enemies_hit.append(enemy)
+            # kill enemies
+            enemy_list_copy = self.enemies.copy()
+            for enemy in self.enemies:
+                if enemy.hp <= 0:
+                    enemy_list_copy.remove(enemy)
+                    self.player_money += 1
+            self.enemies = enemy_list_copy
+                    
             self.move_enemies(dt)
+
+            # enemies at end
+            enemy_list_copy = self.enemies.copy()
+            for enemy in self.enemies:
+                if enemy.dist >= self.path_len:
+                    enemy_list_copy.remove(enemy)
+                    self.player_health -= 1
+            self.enemies = enemy_list_copy
+
             self.shoot_towers(dt)
 
             self.displayer.display(dt) 
@@ -114,16 +154,25 @@ class Displayer:
         for projectile in self.game.projectiles:
             projectile.draw(self.screen)
 
+    def display_pre_tower(self):
+        if self.game.pre_tower:
+            self.game.pre_tower.draw(self.screen, color = 'red')
+
     def display(self, dt):
         self.screen.fill('white')
-        
-        pygame.display.set_caption("Tower Defense | dt = " + str(dt))  # Donne un titre à la fenêtre.
+        pygame.display.set_caption(
+            "Tower Defense | dt = " + str(dt)
+            + " | hp = " + str(self.game.player_health)
+            + " | money = " + str(self.game.player_money)
+            )  # Donne un titre à la fenêtre.
         
         
         display_path(self.game.path_points, self.screen, thikness=1)
         self.display_enemies()
         self.display_towers()
         self.display_projectiles()
+        self.display_pre_tower()
+        
 
         # Met à jour l'écran après tous les dessins
         pygame.display.update()

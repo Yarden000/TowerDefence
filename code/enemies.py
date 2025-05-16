@@ -22,7 +22,10 @@ class Enemy_spawner:
 
 
 class Enemy:
-    radius = 10
+    radius = 25
+    color2 = 'red'
+    color1 = 'green'
+    max_hp = 100
     def __init__(self, game):
         self.game = game
         self.path:Path = self.game.path  # Stocke le chemin que l'ennemi doit suivre.
@@ -31,7 +34,8 @@ class Enemy:
         self.dist = 0  # distance on the path
         self.pos:tuple = comp_to_tup(self.path.point(self.dist)) # Position initiale de l'ennemi (premier point du chemin).
         self.speed = 100  # Vitesse de déplacement par mise à jour.
-        self.color = 'red'
+        self.hp = self.max_hp
+        self.damage_radius = 0
 
     def move(self, dt, path_points:list[tuple], path_precision:int):
         self.dist += self.speed * dt
@@ -39,15 +43,15 @@ class Enemy:
             rounded_dist = int(self.dist / path_precision)
             self.pos = path_points[rounded_dist]
             # self.pos = comp_to_tup(self.path.point(self.path.ilength(rounded_dist)))
-        else:
-            self.arrived()
 
-    def arrived(self):
-        self.kill()
 
-    def kill(self):
-        self.game.enemies.remove(self)
+    def take_damage(self, damage):
+        self.hp -= damage
+        self.damage_radius = self.radius * (1 - self.hp / self.max_hp)
 
     def draw(self, screen):
         # Dessine l'ennemi sur l'écran
-        pygame.draw.circle(screen, self.color, self.pos, self.radius)
+        pygame.draw.circle(screen, self.color1, self.pos, self.radius)
+        if self.damage_radius > 0:
+            pygame.draw.circle(screen, self.color2, self.pos, self.damage_radius)
+        pygame.draw.circle(screen, 'black', self.pos, self.radius, width=1)

@@ -6,6 +6,7 @@ from enemies import Enemy
 class Tower:
     radius = 15
     range = 150
+    cost = 20
     # La classe Tower représente une tour dans le jeu
     # TODO: Ajouter les attributs nécessaires pour la tour
     def __init__(self, game, pos):
@@ -35,7 +36,7 @@ class Tower:
         if self.timefromlastshoot >= self.cooldown:
             self.timefromlastshoot %= self.cooldown
             if farthest := self.farthest_enemy(self.enemies_in_range()):
-                dir = (farthest.pos - self.pos).normalize()
+                dir = (Vec2(farthest.pos) - Vec2(self.pos)).normalize()
                 self.game.add_projectile(Projectile(self.pos, dir))
             
         # Cette méthode se charge de sélectionner un ennemi et de tirer un projectile
