@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
 
 
-# Define the path using svgelements
+'''# Define the path using svgelements
 path:Path = Path()
 # Append a quadratic Bézier curve
 path += Path(QuadraticBezier(200 + 100j, 1 + 200j, 200 + 400j))
@@ -17,19 +17,7 @@ ax.set_xlim(0, 1000)
 ax.set_ylim(0, 1000)
 
 # Extract points from the path and plot them
-'''
-for segment in path:
-    if isinstance(segment, Line):
-        x_values = [segment.start.real, segment.end.real]
-        y_values = [segment.start.imag, segment.end.imag]
-        ax.plot(x_values, y_values, marker='o', color='b')
-    elif isinstance(segment, QuadraticBezier):
-        # Approximate the quadratic Bézier curve by sampling points
-        t_values = [i / 100 for i in range(101)]
-        x_values = [segment.point(t).real for t in t_values]
-        y_values = [segment.point(t).imag for t in t_values]
-        ax.plot(x_values, y_values, color='g')
-'''
+
 n = 50
 path_len = path.length()
 x_values = [path.point(path.ilength(path_len * i / n)).real for i in range(n)]
@@ -45,3 +33,8 @@ ax.plot(x_values, y_values, 'r.')
 # Display the plot
 plt.title("SVG Path Visualization")
 plt.show()
+'''
+
+
+l = [12, 4]
+print(l[len(l)])

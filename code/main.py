@@ -156,7 +156,12 @@ class Displayer:
 
     def display_pre_tower(self):
         if self.game.pre_tower:
-            self.game.pre_tower.draw(self.screen, color = 'red')
+            color = 'green'
+            for tower in self.game.towers:
+                if cc_collision(self.game.pre_tower.pos, self.game.pre_tower.radius, tower.pos, tower.radius):
+                    color = 'red'
+                    break
+            self.game.pre_tower.draw(self.screen, color = color)
 
     def display(self, dt):
         self.screen.fill('white')
@@ -180,7 +185,7 @@ class Displayer:
 if __name__ == "__main__":
     print('starting ...')
     map_maker = MapMaker()
-    # map_maker.run()
+    map_maker.run()
     game = Game(map_maker)
     if not map_maker.exit:
         game.run()
