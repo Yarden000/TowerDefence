@@ -7,7 +7,7 @@ import pygame  # Bibliothèque principale pour la création de la fenêtre, la g
 import math    # Fournit des fonctions mathématiques comme hypot pour calculer des distances.
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
 from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
-from settings import SCREEN_SIZE, display_path, path_points, tup_to_comp, Vec2
+from settings import SCREEN_SIZE, display_path, path_points, tup_to_comp, Vec2, closest_to_point, dist, comp_to_tup
 
 
 class TemporairyPath:
@@ -41,6 +41,8 @@ class MapMaker:
         #self.points = path_points(self.path, self.precision)
         self.exit = False  # if true means you want to close the program => no need to run the game in the main file
 
+        self.special_point_rad = 20
+
     def run(self):
         
         temporairy_precision = 20
@@ -60,7 +62,7 @@ class MapMaker:
 
         '''path info'''
         start = None
-        path = None
+        path_being_drawn = None
         paths:list[dict] = []
         # TODO for now only lines work
         start_pos: None|tuple = None
@@ -72,6 +74,8 @@ class MapMaker:
         edditing_path:int = 0
 
         original_mouse_pressed = (False, False, False)
+
+        point_selected = None
         while not finished:
 
             clock.tick(FPS)
@@ -92,18 +96,20 @@ class MapMaker:
             if drawing:
                 
                 if start:
-                    if path:
-                        if tup_to_comp(mouse_pos) != path.start:
-                            path.end = tup_to_comp(mouse_pos)
+                    if path_being_drawn:
+                        if tup_to_comp(mouse_pos) != path_being_drawn.start:
+                            path_being_drawn.end = tup_to_comp(mouse_pos)
                     else:
                         if paths:
-                            path = Line(tup_to_comp(paths[-1]['end']), tup_to_comp(mouse_pos + Vec2(0, 1)))
+                            path_being_drawn = Line(paths[-1]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
                         else:
                             Line(tup_to_comp(start), tup_to_comp(start + Vec2(0, 1)))
+                else:
+                    path_being_drawn = None
                 if mouse_pressed[0]:
                     if not start:
                         start = mouse_pos
-                        path = Line(tup_to_comp(start), tup_to_comp(start + Vec2(0, 1)))
+                        path_being_drawn = Line(tup_to_comp(start), tup_to_comp(start + Vec2(0, 1)))
                         '''
                         elif not paths:
                             print('first path')
@@ -115,38 +121,83 @@ class MapMaker:
                         path_len = len(paths)
 
                         if paths:
-                            paths.append({type: Line, 'start': paths[-1]['end'], 'end': mouse_pos, 'path': path, 'points': path_points(path, temporairy_precision), 'color': 'black'})
-                            path = Line(tup_to_comp(paths[-1]['end']), tup_to_comp(mouse_pos + Vec2(0, 1)))
+                            paths.append({'type': Line, 'path': path_being_drawn, 'points': path_points(path_being_drawn, temporairy_precision)})
+                            path_being_drawn = Line(paths[-1]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
 
                         else:
-                            paths.append({type: Line, 'start': start, 'end': mouse_pos, 'path': path, 'points': path_points(path, temporairy_precision), 'color': 'black'})
-                            path = Line(tup_to_comp(paths[-1]['end']), tup_to_comp(mouse_pos + Vec2(0, 1)))
+                            paths.append({'type': Line, 'path': path_being_drawn, 'points': path_points(path_being_drawn, temporairy_precision)})
+                            path_being_drawn = Line(paths[-1]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
+
+
 
                 if paths:
                     for event in events:
                         if event.type == pygame.KEYDOWN:
                             if pygame.K_p == event.key:
                                 drawing = not drawing
-                                path = None
+                                path_being_drawn = None
+                            if drawing and pygame.K_d == event.key:
+                                paths.pop()
+                                if paths:
+                                    path_being_drawn = Line(paths[-1]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
+                                else:
+                                    start = None
 
             # edditing existing paths
             else:
-                paths[edditing_path]['color'] = 'black'
+                
                 for event in events:
                     if event.type == pygame.KEYDOWN:
+                        prev_eddited_path = edditing_path
+
                         if pygame.K_DOWN == event.key:
                             edditing_path -= 1
+                            point_selected = None
+
                         if pygame.K_UP == event.key:
                             edditing_path += 1
+                            point_selected = None
+
                         if edditing_path < 0:
                             edditing_path = len(paths) - 1
+
                         if edditing_path >= len(paths):
                             edditing_path = 0
-                        print(edditing_path)
 
-                paths[edditing_path]['color'] = 'green'
+                        if edditing_path != prev_eddited_path:
+                            paths[prev_eddited_path]['points'] = path_points(paths[prev_eddited_path]['path'], temporairy_precision)
 
-                # type of path selected
+
+                
+                if mouse_pressed[0]:
+                    # TODO needs implementation for other path types
+                    p = paths[edditing_path]
+
+                    if not point_selected:
+
+                        if p['type'] == Line:
+                            if dist(mouse_pos, comp_to_tup(p['path'].start)) > dist(mouse_pos, comp_to_tup(p['path'].end)) and dist(mouse_pos, comp_to_tup(p['path'].end)) < self.special_point_rad:
+                                point_selected = 'end'
+                                
+                            elif dist(mouse_pos, comp_to_tup(p['path'].end)) > dist(mouse_pos, comp_to_tup(p['path'].start)) and dist(mouse_pos, comp_to_tup(p['path'].start)) < self.special_point_rad:
+                                point_selected = 'start'
+                                
+
+                if mouse_pressed[2]:
+                    point_selected = None
+                print(point_selected)
+
+                if point_selected == 'start':
+                    p['path'].start = tup_to_comp(mouse_pos)
+
+                if point_selected == 'end':
+                    p['path'].end = tup_to_comp(mouse_pos)
+
+                
+
+
+
+                # type of path selected  TODO not yet implemented for paths other than line
                 if keys[pygame.K_1]:
                     type = Line
                 if keys[pygame.K_2]:
@@ -161,7 +212,9 @@ class MapMaker:
                     if event.type == pygame.KEYDOWN:
                         if pygame.K_0 == event.key:
                             drawing = not drawing
-                            path = None
+                            path_being_drawn = None
+                            point_selected = None
+                            paths[edditing_path]['points'] = path_points(paths[edditing_path]['path'], temporairy_precision)
 
 
             
@@ -171,10 +224,21 @@ class MapMaker:
             points = path_points(self.path, temporairy_precision)
             print('time = ', time.time() - start_time)
             '''
-            for path_ in paths:
-                display_path(path_['points'], SCREEN, color = path_['color'], thikness = temporairy_precision)
-            if path:
-                display_path(path_points(path, temporairy_precision), SCREEN, color = 'black', thikness = temporairy_precision)
+            if drawing:
+                for path_ in paths:
+                    display_path(path_['points'], SCREEN, color = 'black', thikness = temporairy_precision)
+                if path_being_drawn:
+                    display_path(path_points(path_being_drawn, temporairy_precision), SCREEN, color = 'black', thikness = temporairy_precision)
+            else:
+                for num, path_ in enumerate(paths):
+                    if num != edditing_path:
+                        display_path(path_['points'], SCREEN, color = 'black', thikness = temporairy_precision)
+                    
+                path_being_eddited = paths[edditing_path]
+                display_path(path_points(path_being_eddited['path'], temporairy_precision), SCREEN, color = 'green', thikness = temporairy_precision)
+                pygame.draw.circle(SCREEN, 'red', comp_to_tup(path_being_eddited['path'].start), self.special_point_rad)
+                pygame.draw.circle(SCREEN, 'red', comp_to_tup(path_being_eddited['path'].end), self.special_point_rad)
+
             # Met à jour l'écran après tous les dessins
             pygame.display.update()
 
