@@ -1,6 +1,5 @@
-import matplotlib.pyplot as plt
 from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
-
+import pygame
 
 '''# Define the path using svgelements
 path:Path = Path()
@@ -35,6 +34,4 @@ plt.title("SVG Path Visualization")
 plt.show()
 '''
 
-
-l = [12, 4]
-print(l[len(l)])
+help(pygame.event.Event)
