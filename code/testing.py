@@ -1,7 +1,8 @@
 from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
 import pygame
+import matplotlib.pyplot as plt
 
-'''# Define the path using svgelements
+# Define the path using svgelements
 path:Path = Path()
 # Append a quadratic Bézier curve
 path += Path(QuadraticBezier(200 + 100j, 1 + 200j, 200 + 400j))
@@ -32,6 +33,3 @@ ax.plot(x_values, y_values, 'r.')
 # Display the plot
 plt.title("SVG Path Visualization")
 plt.show()
-'''
-
-help(pygame.event.Event)

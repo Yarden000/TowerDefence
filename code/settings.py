@@ -34,6 +34,7 @@ def display_path(points:list[tuple], screen, color = 'green', thikness = 5) -> N
 def path_points(path:Path, precision:int) -> list[tuple]:
     path_len = path.length()
     n = int(path_len / precision) + 1  # number of points
+    print(path_len, n)
     positions = [comp_to_tup(path.point(path.ilength(path_len * i / n))) for i in range(n)]
     return positions
 

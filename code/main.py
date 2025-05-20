@@ -100,12 +100,18 @@ class Game:
 
             # projectiles hit enemies
             # TODO: needs optimisation: grid
+            not_to_far_projectiles = []
             for projectile in self.projectiles:
                 for enemy in self.enemies:
                     if enemy not in projectile.enemies_hit:
                         if cc_collision(projectile.pos, projectile.radius, enemy.pos, enemy.radius):
                             enemy.take_damage(5)
                             projectile.enemies_hit.append(enemy)
+
+                if projectile.pos.magnitude < 2000:
+                    not_to_far_projectiles.append(projectile)
+            self.projectiles = not_to_far_projectiles
+            
             # kill enemies
             enemy_list_copy = self.enemies.copy()
             for enemy in self.enemies:

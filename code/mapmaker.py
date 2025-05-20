@@ -10,11 +10,7 @@ from svgpathtools import Path, Line, Arc, CubicBezier, QuadraticBezier
 from settings import SCREEN_SIZE, display_path, path_points, tup_to_comp, Vec2, closest_to_point, dist, comp_to_tup
 
 
-class TemporairyPath:
-    
-    def __init__(self, start, end):
-        self.start = start
-        self.end = end
+
         
 
 
@@ -63,7 +59,7 @@ class MapMaker:
         '''path info'''
         start = None
         path_being_drawn = None
-        paths:list[dict] = []
+        paths:list[dict[dict]] = []
         # TODO for now only lines work
         start_pos: None|tuple = None
         end_pos = None
@@ -76,6 +72,7 @@ class MapMaker:
         original_mouse_pressed = (False, False, False)
 
         point_selected = None
+        type_ = None
         while not finished:
 
             clock.tick(FPS)
@@ -101,7 +98,8 @@ class MapMaker:
                             path_being_drawn.end = tup_to_comp(mouse_pos)
                     else:
                         if paths:
-                            path_being_drawn = Line(paths[-1]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
+                            path_type = paths[-1]['type chosen']
+                            path_being_drawn = Line(paths[-1][path_type]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
                         else:
                             Line(tup_to_comp(start), tup_to_comp(start + Vec2(0, 1)))
                 else:
@@ -121,12 +119,14 @@ class MapMaker:
                         path_len = len(paths)
 
                         if paths:
-                            paths.append({'type': Line, 'path': path_being_drawn, 'points': path_points(path_being_drawn, temporairy_precision)})
-                            path_being_drawn = Line(paths[-1]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
+                            paths.append({Line: {'path': path_being_drawn, 'points': path_points(path_being_drawn, temporairy_precision)}, 'type chosen': Line})
+                            path_type = paths[-1]['type chosen']
+                            path_being_drawn = Line(paths[-1][path_type]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
 
                         else:
-                            paths.append({'type': Line, 'path': path_being_drawn, 'points': path_points(path_being_drawn, temporairy_precision)})
-                            path_being_drawn = Line(paths[-1]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
+                            paths.append({Line: {'path': path_being_drawn, 'points': path_points(path_being_drawn, temporairy_precision)}, 'type chosen': Line})
+                            path_type = paths[-1]['type chosen']
+                            path_being_drawn = Line(paths[-1][path_type]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
 
 
 
@@ -139,7 +139,8 @@ class MapMaker:
                             if drawing and pygame.K_d == event.key:
                                 paths.pop()
                                 if paths:
-                                    path_being_drawn = Line(paths[-1]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
+                                    path_type = paths[-1]['type chosen']
+                                    path_being_drawn = Line(paths[-1][path_type]['path'].end, tup_to_comp(mouse_pos + Vec2(0, 1)))
                                 else:
                                     start = None
 
@@ -165,27 +166,94 @@ class MapMaker:
                             edditing_path = 0
 
                         if edditing_path != prev_eddited_path:
-                            paths[prev_eddited_path]['points'] = path_points(paths[prev_eddited_path]['path'], temporairy_precision)
+                            path_type = paths[prev_eddited_path]['type chosen']
+                            paths[prev_eddited_path][path_type]['points'] = path_points(paths[prev_eddited_path][path_type]['path'], temporairy_precision)
+                            type_ = paths[edditing_path]['type chosen']
+
+                        if pygame.K_1 == event.key:
+                            type_ = Line
+                        elif pygame.K_2 == event.key:
+                            type_ = QuadraticBezier
+                        elif pygame.K_3 == event.key:
+                            type_ = CubicBezier
+                        
+                        
+                        
+
+                        if type_ != paths[edditing_path]['type chosen'] and type_ != None:
+
+                            if not (type_ in paths[edditing_path]):
+
+                                if type_ == QuadraticBezier:
+                                    s = paths[edditing_path][Line]['path'].start
+                                    e = paths[edditing_path][Line]['path'].end
+                                    c_in_vec = (Vec2(comp_to_tup(s)) + Vec2(comp_to_tup(e))) * 0.5 + Vec2(10, 10)
+                                    c = tup_to_comp(tuple(c_in_vec))
+                                    path__ = QuadraticBezier(s, c, e)
+                                    paths[edditing_path][QuadraticBezier] = {'path': path__, 'points': path_points(path__, temporairy_precision)}      
+
+                                elif type_ == CubicBezier:
+                                    s = paths[edditing_path][Line]['path'].start
+                                    e = paths[edditing_path][Line]['path'].end
+                                    c1_in_vec = (Vec2(comp_to_tup(s)) + Vec2(comp_to_tup(e))) * 0.5 + Vec2(20, 20)
+                                    c1 = tup_to_comp(tuple(c1_in_vec))
+                                    c2_in_vec = (Vec2(comp_to_tup(s)) + Vec2(comp_to_tup(e))) * 0.5 - Vec2(20, 20)
+                                    c2 = tup_to_comp(tuple(c2_in_vec))
+                                    path__ = CubicBezier(s, c1, c2, e)
+                                    paths[edditing_path][CubicBezier] = {'path': path__, 'points': path_points(path__, temporairy_precision)}      
+
+
+                                else:
+                                    raise ValueError('path type not yet implemented')
+                            
+                            paths[edditing_path]['type chosen'] = type_
+                            print(paths[edditing_path]['type chosen'])
+
 
 
                 
                 if mouse_pressed[0]:
                     # TODO needs implementation for other path types
-                    p = paths[edditing_path]
+                    path_type = paths[edditing_path]['type chosen']
+                    p = paths[edditing_path][path_type]
 
                     if not point_selected:
 
-                        if p['type'] == Line:
+                        if path_type == Line:
                             if dist(mouse_pos, comp_to_tup(p['path'].start)) > dist(mouse_pos, comp_to_tup(p['path'].end)) and dist(mouse_pos, comp_to_tup(p['path'].end)) < self.special_point_rad:
                                 point_selected = 'end'
                                 
                             elif dist(mouse_pos, comp_to_tup(p['path'].end)) > dist(mouse_pos, comp_to_tup(p['path'].start)) and dist(mouse_pos, comp_to_tup(p['path'].start)) < self.special_point_rad:
                                 point_selected = 'start'
-                                
+
+                        if path_type == QuadraticBezier:
+                            important_points = [comp_to_tup(p['path'].start), comp_to_tup(p['path'].control), comp_to_tup(p['path'].end)]
+                            closest_to_point_dist = closest_to_point(mouse_pos, important_points, want_dist=True)[1]
+
+                            if closest_to_point_dist < self.special_point_rad:
+                                if closest_to_point_dist == dist(mouse_pos, comp_to_tup(p['path'].start)):
+                                    point_selected = 'start'
+                                if closest_to_point_dist == dist(mouse_pos, comp_to_tup(p['path'].control)):
+                                    point_selected = 'control'
+                                if closest_to_point_dist == dist(mouse_pos, comp_to_tup(p['path'].end)):
+                                    point_selected = 'end'
+
+                        if path_type == CubicBezier:
+                            important_points = [comp_to_tup(p['path'].start), comp_to_tup(p['path'].control1), comp_to_tup(p['path'].control2), comp_to_tup(p['path'].end)]
+                            closest_to_point_dist = closest_to_point(mouse_pos, important_points, want_dist=True)[1]
+
+                            if closest_to_point_dist < self.special_point_rad:
+                                if closest_to_point_dist == dist(mouse_pos, comp_to_tup(p['path'].start)):
+                                    point_selected = 'start'
+                                if closest_to_point_dist == dist(mouse_pos, comp_to_tup(p['path'].control1)):
+                                    point_selected = 'control1'
+                                if closest_to_point_dist == dist(mouse_pos, comp_to_tup(p['path'].control2)):
+                                    point_selected = 'control2'
+                                if closest_to_point_dist == dist(mouse_pos, comp_to_tup(p['path'].end)):
+                                    point_selected = 'end'
 
                 if mouse_pressed[2]:
                     point_selected = None
-                print(point_selected)
 
                 if point_selected == 'start':
                     p['path'].start = tup_to_comp(mouse_pos)
@@ -193,19 +261,16 @@ class MapMaker:
                 if point_selected == 'end':
                     p['path'].end = tup_to_comp(mouse_pos)
 
+                if point_selected == 'control':
+                    p['path'].control = tup_to_comp(mouse_pos)
                 
+                if point_selected == 'control1':
+                    p['path'].control1 = tup_to_comp(mouse_pos)
 
+                if point_selected == 'control2':
+                    p['path'].control2 = tup_to_comp(mouse_pos)
 
-
-                # type of path selected  TODO not yet implemented for paths other than line
-                if keys[pygame.K_1]:
-                    type = Line
-                if keys[pygame.K_2]:
-                    type = Arc
-                if keys[pygame.K_3]:
-                    type = QuadraticBezier
-                if keys[pygame.K_4]:
-                    type = CubicBezier
+                
 
             if paths:
                 for event in events:
@@ -214,7 +279,8 @@ class MapMaker:
                             drawing = not drawing
                             path_being_drawn = None
                             point_selected = None
-                            paths[edditing_path]['points'] = path_points(paths[edditing_path]['path'], temporairy_precision)
+                            path_type = paths[edditing_path]['type chosen']
+                            paths[edditing_path][path_type]['points'] = path_points(paths[edditing_path][path_type]['path'], temporairy_precision)
 
 
             
@@ -226,18 +292,30 @@ class MapMaker:
             '''
             if drawing:
                 for path_ in paths:
-                    display_path(path_['points'], SCREEN, color = 'black', thikness = temporairy_precision)
+                    path_type = path_['type chosen']
+                    display_path(path_[path_type]['points'], SCREEN, color = 'black', thikness = temporairy_precision)
                 if path_being_drawn:
                     display_path(path_points(path_being_drawn, temporairy_precision), SCREEN, color = 'black', thikness = temporairy_precision)
             else:
                 for num, path_ in enumerate(paths):
                     if num != edditing_path:
-                        display_path(path_['points'], SCREEN, color = 'black', thikness = temporairy_precision)
+                        path_type = path_['type chosen']
+                        display_path(path_[path_type]['points'], SCREEN, color = 'black', thikness = temporairy_precision)
                     
-                path_being_eddited = paths[edditing_path]
+                path_type = paths[edditing_path]['type chosen']
+                path_being_eddited = paths[edditing_path][path_type]
                 display_path(path_points(path_being_eddited['path'], temporairy_precision), SCREEN, color = 'green', thikness = temporairy_precision)
+                
                 pygame.draw.circle(SCREEN, 'red', comp_to_tup(path_being_eddited['path'].start), self.special_point_rad)
                 pygame.draw.circle(SCREEN, 'red', comp_to_tup(path_being_eddited['path'].end), self.special_point_rad)
+                if path_type == QuadraticBezier:
+                    pygame.draw.circle(SCREEN, 'red', comp_to_tup(path_being_eddited['path'].control), self.special_point_rad)
+
+                if path_type == CubicBezier:
+                    pygame.draw.circle(SCREEN, 'red', comp_to_tup(path_being_eddited['path'].control1), self.special_point_rad)
+                    pygame.draw.circle(SCREEN, 'red', comp_to_tup(path_being_eddited['path'].control2), self.special_point_rad)
+
+
 
             # Met à jour l'écran après tous les dessins
             pygame.display.update()
@@ -252,5 +330,6 @@ class MapMaker:
 
         pygame.quit()
         for path in paths:
-            self.path += Path(path['path'])
+            path_type = path['type chosen']
+            self.path += Path(path[path_type]['path'])
         self.points = path_points(self.path, self.precision)
