@@ -13,7 +13,13 @@ class Game:
     
     HOW TO PLAY:
     1) You will first create the map. There ar two actions at your disposal. You can either draw or delete path segments, or you can modify existing segments.
-    .
+
+        To switch from drawing to editing click the 0 button.
+        To draw new path use the left mouse button. To delete the last drawn path use the d key.
+        When editing paths you can sitch from one to the other whith the up and down arrow keys. 
+        To swich between path types use the 1, 2 and 3 buttons. to select and move points click on them with the left click then the right click to deselect.
+
+        when you are happy whith your map click on Q:
     .
     .
     """
@@ -127,7 +133,7 @@ class Game:
                         if cc_collision(projectile.pos, projectile.radius, enemy.pos, enemy.radius):
                             enemy.take_damage(5)
                             projectile.enemies_hit.append(enemy)
-                            
+
                 # if projectile far away it gets deleted
                 if projectile.pos.magnitude() < 2000:
                     not_to_far_projectiles.append(projectile)
