@@ -23,18 +23,7 @@ class MapMaker:
         # temporary
         self.precision = 1
         self.path = Path()
-        vertecies = [(0, 150), (500, 150), (500, 300), (800, 300), (800, 450)]
-        '''
-        for i in range(len(vertecies) - 1):
-            self.path += Path(Line(tup_to_comp(vertecies[i]), tup_to_comp(vertecies[i+1])))
-        self.path += Path(CubicBezier(800 + 450j, 500 - 200j, 800 + 800j, 450j))
-        '''
-        '''
-        self.path = Path()
-        self.path += Path(QuadraticBezier(200 + 100j, 200j, 200 + 400j))
-        self.path += Path(CubicBezier(200 + 400j, 600j, 800 + 500j, 300 + 600j))
-        '''
-        #self.points = path_points(self.path, self.precision)
+
         self.exit = False  # if true means you want to close the program => no need to run the game in the main file
 
         self.special_point_rad = 20
@@ -60,16 +49,10 @@ class MapMaker:
         start = None
         path_being_drawn = None
         paths:list[dict[dict]] = []
-        # TODO for now only lines work
-        start_pos: None|tuple = None
-        end_pos = None
-        # (if line just start_point and end_point needed)
-        # if Arc
 
-        type: None|Line|Arc|QuadraticBezier|CubicBezier = None
-        edditing_path:int = 0
+        edditing_path:int = 0  # the position of the subpath being eddited
 
-        original_mouse_pressed = (False, False, False)
+        original_mouse_pressed = (False, False, False)  # helps not to count double if mouse button is kept pressed
 
         point_selected = None
         type_ = None
@@ -108,15 +91,8 @@ class MapMaker:
                     if not start:
                         start = mouse_pos
                         path_being_drawn = Line(tup_to_comp(start), tup_to_comp(start + Vec2(0, 1)))
-                        '''
-                        elif not paths:
-                            print('first path')
-                            path = Line(tup_to_comp(start), tup_to_comp(mouse_pos))
-                            paths.append({type: Line, 'start': start, 'end': mouse_pos, 'path': path, 'points': path_points(path, temporairy_precision)})
-                            #path = Line(tup_to_comp(start), tup_to_comp(mouse_pos))
-                        '''
+
                     else:
-                        path_len = len(paths)
 
                         if paths:
                             paths.append({Line: {'path': path_being_drawn, 'points': path_points(path_being_drawn, temporairy_precision)}, 'type chosen': Line})
@@ -133,9 +109,6 @@ class MapMaker:
                 if paths:
                     for event in events:
                         if event.type == pygame.KEYDOWN:
-                            if pygame.K_p == event.key:
-                                drawing = not drawing
-                                path_being_drawn = None
                             if drawing and pygame.K_d == event.key:
                                 paths.pop()
                                 if paths:
@@ -271,7 +244,7 @@ class MapMaker:
                     p['path'].control2 = tup_to_comp(mouse_pos)
 
                 
-
+            # switches from drawing to editing
             if paths:
                 for event in events:
                     if event.type == pygame.KEYDOWN:
@@ -285,11 +258,6 @@ class MapMaker:
 
             
             # displays
-            '''
-            start_time = time.time()
-            points = path_points(self.path, temporairy_precision)
-            print('time = ', time.time() - start_time)
-            '''
             if drawing:
                 for path_ in paths:
                     path_type = path_['type chosen']

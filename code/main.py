@@ -1,13 +1,22 @@
 import pygame  # Bibliothèque principale pour la création de la fenêtre, la gestion des événements et des dessins.
 import math    # Fournit des fonctions mathématiques comme hypot pour calculer des distances.
 import random  # Permet d'introduire des comportements aléatoires dans le jeu si besoin.
-from settings import SCREEN_SIZE, display_path, cc_collision
+from settings import SCREEN_SIZE, display_path, cc_collision, closest_to_point
 from mapmaker import MapMaker
 from enemies import Enemy,Enemy_spawner
 from tower import Tower
 from projectiles import Projectile
 
 class Game:
+    """
+    class contains the entire game:
+    
+    HOW TO PLAY:
+    1) You will first create the map. There ar two actions at your disposal. You can either draw or delete path segments, or you can modify existing segments.
+    .
+    .
+    .
+    """
     
     def __init__(self, map_maker: MapMaker):
         self.displayer = Displayer(self)
@@ -17,6 +26,7 @@ class Game:
         self.path_len = self.path.length()
         self.path_points = self.map_maker.points
         self.path_precision = self.map_maker.precision
+        self.path_width = 10
 
         self.enemies: list[Enemy] = []
         self.towers:list[Tower] = []
@@ -24,6 +34,8 @@ class Game:
 
         self.player_health = 100
         self.player_money = 100000
+
+        self.pre_tower_coliding = False
 
     def spawn_enemy(self):
         self.enemies.append(Enemy(self))
@@ -41,9 +53,6 @@ class Game:
             tower.shoot(dt)
 
     def add_tower(self, new_tower:Tower):
-        for tower in self.towers:
-            if cc_collision(new_tower.pos, new_tower.radius, tower.pos, tower.radius) or new_tower.cost > self.player_money:
-                return False
         self.towers.append(new_tower)
         self.player_money -= new_tower.cost
 
@@ -84,11 +93,22 @@ class Game:
                 self.pre_tower = Tower(self, mouse_pos)
 
             # place towers
+            
             elif action == 'placing_tower':
+                
+                # checking if the pre_tower is colliding with anything
+                self.pre_tower_coliding = False
+                for tower in self.towers:
+                    if cc_collision(self.pre_tower.pos, self.pre_tower.radius, tower.pos, tower.radius) or self.pre_tower.cost > self.player_money:
+                        self.pre_tower_coliding = True
+                        break
+                dist_to_path = closest_to_point(self.pre_tower.pos, self.path_points, want_dist=True)[1]
+                if dist_to_path < self.pre_tower.radius + self.path_width / 2:
+                    self.pre_tower_coliding = True
+
                 if mouse_pressed[0]:
-                    print('placing')
-                    print('--------')
-                    self.add_tower(self.pre_tower)
+                    if not self.pre_tower_coliding:
+                        self.add_tower(self.pre_tower)
                     self.pre_tower = Tower(self, mouse_pos)
                 
                 self.pre_tower.move_to(mouse_pos)
@@ -107,8 +127,9 @@ class Game:
                         if cc_collision(projectile.pos, projectile.radius, enemy.pos, enemy.radius):
                             enemy.take_damage(5)
                             projectile.enemies_hit.append(enemy)
-
-                if projectile.pos.magnitude < 2000:
+                            
+                # if projectile far away it gets deleted
+                if projectile.pos.magnitude() < 2000:
                     not_to_far_projectiles.append(projectile)
             self.projectiles = not_to_far_projectiles
             
@@ -163,10 +184,8 @@ class Displayer:
     def display_pre_tower(self):
         if self.game.pre_tower:
             color = 'green'
-            for tower in self.game.towers:
-                if cc_collision(self.game.pre_tower.pos, self.game.pre_tower.radius, tower.pos, tower.radius):
-                    color = 'red'
-                    break
+            if self.game.pre_tower_coliding:
+                color = 'red'
             self.game.pre_tower.draw(self.screen, color = color)
 
     def display(self, dt):

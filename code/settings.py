@@ -8,7 +8,10 @@ Vec2 = pygame.Vector2
 
 
 def closest_to_point(origin, targets, want_dist = False):
-    '''elements of targets need to have a .pos'''
+    '''
+    finds the closest point
+    elements of targets need to have a .pos'
+    '''
     closest = min(targets, key = lambda x: dist(origin, x))
     if want_dist:
         return closest, dist(origin, closest)
